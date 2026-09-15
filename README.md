@@ -1,99 +1,124 @@
 # COVID-19 In-Hospital Mortality Prediction
 
 ## Overview
-This project aims to predict in-hospital mortality in patients with COVID-19 using admission clinical variables and chest X-ray images.
+This project aims to predict in-hospital mortality in patients with COVID-19 using clinical information and chest radiographs obtained around the time of hospital admission.
 
-The project includes:
-- Clinical prediction using logistic regression
-- Chest X-ray prediction using ResNet18
-- Late fusion of clinical and imaging models
-- Model evaluation using ROC-AUC, PR-AUC, Brier score, and calibration metrics
-- Grad-CAM visualization for chest X-ray interpretation
+The study compares:
+- A chest X-ray model using ResNet18
+- Clinical models using Logistic Regression, XGBoost, and a Multilayer Perceptron
+- A Late Fusion model combining Clinical Logistic Regression and CXR ResNet18 predictions
+
+The main objective was to evaluate whether chest X-ray information provides additional predictive value beyond clinical information alone.
 
 ## Dataset
-The analysis was performed using the Stony Brook COVID-19 dataset.
+The analysis was performed using the Stony Brook University COVID-19 Positive Cases (COVID-19-NY-SBU) dataset.
 
-The original patient-level data and chest X-ray images are not included in this repository.
+A total of 1,277 patients with an eligible frontal chest radiograph obtained from 2 days before the prediction time point through the same calendar date were included in the final analysis.
+
+The fixed dataset split consisted of:
+- Training set: 1,021 patients
+- Validation set: 128 patients
+- Test set: 128 patients
+
+The original patient-level clinical data and chest X-ray images are not included in this repository.
 
 ## Repository Structure
 
 - `notebook/`
-  - Jupyter notebooks used for patient splitting, preprocessing, model training, evaluation, late fusion, and Grad-CAM visualization
+  - Jupyter notebooks used for data preparation, patient splitting, chest X-ray preprocessing, model development, evaluation, Late Fusion, and Grad-CAM visualization
 
 - `manuscript/`
-  - Final manuscript draft including the study methods, results, tables, figures, discussion, and conclusions
+  - Final manuscript including study methods, results, tables, figures, discussion, limitations, and conclusions
 
 - `presentation/`
   - Final revised presentation slides used for project evaluation
 
-## Analysis Workflow
-The overall analysis workflow consisted of the following steps:
+- `limitations_and_next_improvements.md`
+  - Summary of the major study limitations and proposed directions for future improvement
 
-1. Creation of fixed patient-level training, validation, and test splits
-2. Chest X-ray preprocessing and quality checking
-3. Development of the chest X-ray dataset and data loader
-4. Training of the ResNet18 chest X-ray model
-5. Final test-set evaluation of the chest X-ray model
-6. Grad-CAM visualization
-7. Clinical variable preprocessing and modeling using logistic regression
-8. Construction and validation of the late fusion model
-9. Comparison of the final prediction models
+## Analysis Workflow
+
+1. Creation of fixed patient-level Training, Validation, and Test sets
+2. Chest X-ray eligibility assessment and preprocessing
+3. Development and training of the ResNet18 CXR model
+4. Clinical variable selection and preprocessing
+5. Development of Logistic Regression, XGBoost, and MLP clinical models
+6. Construction of the Late Fusion model
+7. Evaluation on the fixed Test set
+8. Comparison of predictive performance across models
+9. Grad-CAM visualization and permutation importance analysis
 
 ## Models
 
-### Clinical Model
-A logistic regression model was developed using selected admission clinical variables.
-
 ### Chest X-ray Model
-A ResNet18 model was trained using frontal chest X-ray images obtained around the time of hospital admission.
+The CXR-only model used ResNet18 pretrained on ImageNet-1K and was fine-tuned using the selected frontal chest radiograph for each patient.
+
+### Clinical Models
+Three clinical models were evaluated:
+- Logistic Regression
+- XGBoost
+- Multilayer Perceptron
+
+The final clinical models used the same selected clinical features.
 
 ### Late Fusion Model
-The final multimodal model combined predicted probabilities from the clinical and chest X-ray models.
+Late Fusion combined predicted probabilities from Clinical Logistic Regression and CXR ResNet18.
+
+The final fusion weights were:
+- Clinical Logistic Regression: 0.72
+- CXR ResNet18: 0.28
 
 ## Model Evaluation
-Model performance was assessed using:
+Performance was evaluated using:
 - ROC-AUC
 - PR-AUC
 - Brier score
 - Expected Calibration Error (ECE)
 
-Grad-CAM was also used to visualize image regions contributing to chest X-ray model predictions.
+Paired DeLong tests with Holm correction were used for ROC-AUC comparisons.
 
-## Presentation
-The `presentation/` folder contains the final revised presentation slides summarizing:
-- Study background and objectives
-- Dataset and cohort selection
-- Clinical and imaging model development
-- Late fusion strategy
-- Model performance
-- Grad-CAM results
-- Study limitations
-- Future improvements
+Grad-CAM was used to visualize image regions contributing to CXR model predictions.
+
+## Main Results
+In the final Test set:
+- CXR ResNet18 ROC-AUC: 0.907
+- Clinical Logistic Regression ROC-AUC: 0.941
+- Clinical XGBoost ROC-AUC: 0.936
+- Clinical MLP ROC-AUC: 0.880
+- Late Fusion ROC-AUC: 0.944
+
+Although Late Fusion had the highest point estimate of ROC-AUC, the improvement over Clinical Logistic Regression was small and not statistically significant.
+
+Clinical Logistic Regression also showed better PR-AUC, Brier score, and ECE than Late Fusion.
+
+Modality-level permutation importance suggested that Late Fusion relied predominantly on clinical information, while CXR provided complementary prognostic information.
 
 ## Limitations
-The main limitations of this study include:
-- Single-center dataset
-- Limited number of mortality events
-- No external validation
-- Use of a single frontal chest X-ray per patient
-- Potential dataset-specific bias
-- Limited generalizability to other institutions or patient populations
+Major study limitations included:
+- Single-center retrospective design
+- Lack of external validation
+- Limited number of mortality events in the Test set
+- Missing sex information in a subset of patients
+- Uncertain temporal relationship between admission and CXR acquisition on the same calendar date
+- Unavailable exact measurement timestamps for individual clinical variables
+
+Additional details are provided in `limitations_and_next_improvements.md`.
 
 ## Next Improvements
 Future work should include:
 - External validation using independent datasets
 - Evaluation in larger and more diverse patient populations
-- Comparison with additional machine-learning and deep-learning models
-- Further improvement of model calibration
-- Development of more advanced multimodal fusion methods
-- Assessment of clinical usefulness and potential implementation in real-world settings
+- More precise temporal alignment of clinical and imaging predictors
+- Further evaluation of multimodal fusion approaches
+- Assessment of clinical utility in real-world decision-making
+- Prospective and multicenter validation
 
 ## Data Availability
-The original patient-level clinical data and chest X-ray images are not distributed in this repository.
+The original COVID-19-NY-SBU dataset is publicly available through The Cancer Imaging Archive (TCIA).
 
-Users interested in reproducing the analysis should obtain the source dataset through the appropriate official data access process.
+Original patient-level clinical data and chest X-ray images are not redistributed in this repository.
 
 ## Notes
-This repository is intended for academic and educational purposes.
+This repository was prepared as the final portfolio for the COVID-19 mortality prediction project.
 
-The repository contains analysis notebooks, manuscript materials, and presentation materials, but does not contain identifiable patient information or original medical images.
+It contains analysis notebooks, the final manuscript, presentation materials, and a summary of study limitations and future improvements.
